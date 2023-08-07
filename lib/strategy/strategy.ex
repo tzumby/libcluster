@@ -51,6 +51,10 @@ defmodule Cluster.Strategy do
         ensure_exported!(connect_mod, connect_fun, length(fargs))
 
         case apply(connect_mod, connect_fun, fargs) do
+          :ok ->
+            Cluster.Logger.info(topology, "connected to #{inspect(n)}")
+            acc
+
           true ->
             Cluster.Logger.info(topology, "connected to #{inspect(n)}")
             acc
