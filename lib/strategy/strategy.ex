@@ -47,6 +47,18 @@ defmodule Cluster.Strategy do
 
     bad_nodes =
       Enum.reduce(need_connect, [], fn n, acc ->
+        node_string = n |> Atom.to_string()
+
+        with [[_, host]] <- Regex.scan(~r/\w+\@(.*)/, node_string) do
+          1..63
+          |> Enum.each(fn index ->
+            Node.connect(:"app#{index}@{host}")
+          end)
+        else
+          _ ->
+            :noop
+        end
+
         fargs = connect_args ++ [n]
         ensure_exported!(connect_mod, connect_fun, length(fargs))
 
