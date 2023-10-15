@@ -30,6 +30,8 @@ defmodule Cluster.Strategy.Gossip do
               multicast_if: "192.168.1.1",
               multicast_addr: "233.252.1.32",
               multicast_ttl: 1,
+	      node_basename: "app",
+	      nodes_per_host: 2,
               secret: "somepassword"]]]
 
   A TTL of 1 will limit packets to the local network, and is the default TTL.
@@ -235,11 +237,14 @@ defmodule Cluster.Strategy.Gossip do
   # If the connection fails, it's likely because the cookie
   # is different, and thus a node we can ignore
   @spec handle_heartbeat(State.t(), binary) :: :ok
-  defp handle_heartbeat(%State{} = state, <<"heartbeat::", rest::binary>>) do
+  defp handle_heartbeat(%State{config: config} = state, <<"heartbeat::", rest::binary>>) do
     self = node()
     connect = state.connect
     list_nodes = state.list_nodes
     topology = state.topology
+
+    node_basename = Keyword.get(config, :node_basename, "app")
+    nodes_per_host = Keyword.get(config, :nodes_per_host, 1)
 
     case :erlang.binary_to_term(rest) do
       %{node: ^self} ->
@@ -247,7 +252,19 @@ defmodule Cluster.Strategy.Gossip do
 
       %{node: n} when is_atom(n) ->
         debug(state.topology, "received heartbeat from #{n}")
-        Cluster.Strategy.connect_nodes(topology, connect, list_nodes, [n])
+
+	[basename, ip] = String.split(to_string(n), "@")
+
+	if basename == node_basename do 
+	  nodes_on_host = 1..nodes_per_host |> Enum.map(fn index -> 
+	   :"#{node_basename}#{index}@#{ip}""
+          end)
+
+	  all_nodes = [n] ++ nodes_on_host
+
+          Cluster.Strategy.connect_nodes(topology, connect, list_nodes, all_nodes)
+	end
+
         :ok
 
       _ ->
