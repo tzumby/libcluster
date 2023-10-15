@@ -257,7 +257,7 @@ defmodule Cluster.Strategy.Gossip do
 
 	if basename == node_basename do 
 	  nodes_on_host = 1..nodes_per_host |> Enum.map(fn index -> 
-	   :"#{node_basename}#{index}@#{ip}""
+	   :"#{node_basename}#{index}@#{ip}"
           end)
 
 	  all_nodes = [n] ++ nodes_on_host
