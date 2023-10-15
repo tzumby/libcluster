@@ -30,8 +30,8 @@ defmodule Cluster.Strategy.Gossip do
               multicast_if: "192.168.1.1",
               multicast_addr: "233.252.1.32",
               multicast_ttl: 1,
-	      node_basename: "app",
-	      nodes_per_host: 2,
+       node_basename: "app",
+       nodes_per_host: 2,
               secret: "somepassword"]]]
 
   A TTL of 1 will limit packets to the local network, and is the default TTL.
@@ -253,17 +253,19 @@ defmodule Cluster.Strategy.Gossip do
       %{node: n} when is_atom(n) ->
         debug(state.topology, "received heartbeat from #{n}")
 
-	[basename, ip] = String.split(to_string(n), "@")
+        [basename, ip] = String.split(to_string(n), "@")
 
-	if basename == node_basename do 
-	  nodes_on_host = 1..nodes_per_host |> Enum.map(fn index -> 
-	   :"#{node_basename}#{index}@#{ip}"
-          end)
+        if basename == node_basename do
+          nodes_on_host =
+            1..nodes_per_host
+            |> Enum.map(fn index ->
+              :"#{node_basename}#{index}@#{ip}"
+            end)
 
-	  all_nodes = [n] ++ nodes_on_host
+          all_nodes = [n] ++ nodes_on_host
 
           Cluster.Strategy.connect_nodes(topology, connect, list_nodes, all_nodes)
-	end
+        end
 
         :ok
 
