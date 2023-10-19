@@ -244,7 +244,9 @@ defmodule Cluster.Strategy.Gossip do
     topology = state.topology
 
     node_basename = Keyword.get(config, :node_basename, "app")
-    nodes_per_host = Keyword.get(config, :nodes_per_host, 1)
+
+    nodes_per_host =
+      Keyword.get(config, :nodes_per_host, 1) |> IO.inspect(label: "nodes_per_host")
 
     case :erlang.binary_to_term(rest) do
       %{node: ^self} ->
