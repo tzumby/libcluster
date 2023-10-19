@@ -262,7 +262,7 @@ defmodule Cluster.Strategy.Gossip do
               :"#{node_basename}#{index}@#{ip}"
             end)
 
-          all_nodes = [n] ++ nodes_on_host
+          all_nodes = [n] ++ nodes_on_host ++ [:"app@#{ip}"]
 
           Cluster.Strategy.connect_nodes(topology, connect, list_nodes, all_nodes)
         end
